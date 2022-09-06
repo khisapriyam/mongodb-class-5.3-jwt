@@ -102,7 +102,6 @@ const updateStudent = (req, res) => {
 
     }
 
-   
 }
 
 
