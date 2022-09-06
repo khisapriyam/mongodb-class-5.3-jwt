@@ -11,7 +11,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended :false }));
 
 //use middleware
-app.use(authCheck)
+// app.use(authCheck)
+
+app.get('/haq', authCheck, (req, res, next) => {
+    console.log('haq route is done');
+    next();
+})
 
 //student route use
 app.use('/api/students', require('./routes/student'));
