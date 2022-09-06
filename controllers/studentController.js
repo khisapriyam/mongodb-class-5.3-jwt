@@ -70,8 +70,42 @@ const createStudent = (req, res) => {
 }
 //update student
 const updateStudent = (req, res) => {
-    res.send('Ami akhon controller theke Student update korchi')
+
+    let id = req.params.id;
+
+    if( !students.some( data => data.id == id )){
+        res.status(404).json({
+            message : "data not found"
+        });
+
+    }
+
+    if( req.body.name == '' || req.body.age == '' || req.body.skill == ''){
+        res.status(400).json({
+            message : "Field must not be empty"
+        });
+        
+
+    }else{
+        students[students.findIndex( data => data.id == id )] = {
+            id: id,
+            name : req.body.name,
+            age : req.body.age,
+            skill : req.body.skill
+        }
+    
+       fs.writeFileSync(path.join(__dirname, '../data/students.json'), JSON.stringify(students)); 
+
+       res.status(201).json({
+        message : "data updated"
+    });
+
+    }
+
+   
 }
+
+
 //delete student
 const deleteStudent = (req, res) => {
 
