@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const Student = require('../models/studentModel')
 
 //Students data model
-const students = JSON.parse(fs.readFileSync(path.join(__dirname,'../data/students.json')).toString());
+//const students = JSON.parse(fs.readFileSync(path.join(__dirname,'../data/students.json')).toString());
 
 //get latest id
 const getLatestId = () => {
@@ -16,115 +17,67 @@ const getLatestId = () => {
 }
 
 //get all students
-const getAllStudents = (req, res) => {
+const getAllStudents = async (req, res) => {
+    
+    let data = await Student.find();
+    res.status(200).json(data);
 
-    if(students.length > 0){
-        res.status(200).json(students);
-    }
-    else{
-        res.status(404).json({
-            messsage : "Student data not found"
-        });
-    }
+    
 }
 
 //get single students
-const getSingleStudent = (req, res) => {
+const getSingleStudent = async (req, res) => {
 
     let id = req.params.id;
 
-    if(students.some( data => data.id == id)){
-        res.status(200).json(students.find( data => data.id == id));
-    }else{
-        res.status(404).json({
-            messsage : 'Student is not found'
-        });
-    }   
+    let single_data = await Student.findById(id);
+
+    res.status(200).json(single_data)
+
+    
 }
 
 //create student
-const createStudent = (req, res) => {
+const createStudent = async (req, res) => {
 
-    if(req.body.name != '' || req.body.age != '' || req.body.skill != ''){
-        students.push({
-            id : getLatestId(),
-            name : req.body.name,
-            age : req.body.age,
-            skill : req.body.skill
-        });
-    
-        fs.writeFileSync(path.join(__dirname, '../data/students.json'), JSON.stringify(students))
-    
-        res.status(201).json({
-            messsage : 'student data created successfully'
-        });
+    let data = await Student.create({
+        name : req.body.name,
+        age : req.body.age,
+        skill : req.body.skill
+    });
 
-    }else{
-        res.status(400).json({
-            messsage : 'student data not created'
-        });
-
-    }
-    
+    res.status(201).json({
+        message : "Student data addedd successful"
+    });
+   
     
 }
 //update student
-const updateStudent = (req, res) => {
+const updateStudent = async (req, res) => {
 
     let id = req.params.id;
 
-    if( !students.some( data => data.id == id )){
-        res.status(404).json({
-            message : "data not found"
-        });
-
-    }
-
-    if( req.body.name == '' || req.body.age == '' || req.body.skill == ''){
-        res.status(400).json({
-            message : "Field must not be empty"
-        });
-        
-
-    }else{
-        students[students.findIndex( data => data.id == id )] = {
-            id: id,
-            name : req.body.name,
-            age : req.body.age,
-            skill : req.body.skill
-        }
-    
-       fs.writeFileSync(path.join(__dirname, '../data/students.json'), JSON.stringify(students)); 
-
-       res.status(201).json({
-        message : "data updated"
+    await Student.findByIdAndUpdate(id, req.body, {
+        new : true
     });
 
-    }
+    res.status(200).json({
+        message : "Student data updated"
+    })
 
 }
 
 
 //delete student
-const deleteStudent = (req, res) => {
+const deleteStudent = async (req, res) => {
 
     let id = req.params.id;
 
-    if( students.some( data => data.id == id )){
+    await Student.findByIdAndDelete(id);
 
-        let updated_data = students.filter( data => data.id != id);
-        fs.writeFileSync(path.join(__dirname, '../data/students.json'),JSON.stringify(updated_data));
-
-        res.status(202).json({
-            message : "Student data deleted"
-        })
-
-    }else{
-        res.status(400).json({
-            message : "Student not found"
-        })
-
-    }
+    res.status(200).json({
+        message : 'Student data deleted successful'
+    })
 }
 
 
@@ -134,7 +87,5 @@ module.exports = {
     createStudent,
     updateStudent,
     deleteStudent
-
-
 
 }
